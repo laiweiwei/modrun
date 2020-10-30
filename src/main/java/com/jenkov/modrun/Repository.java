@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by jjenkov on 23-10-2016.
+ * @author laiweiwei on 2020-10-30
  */
 public class Repository {
 
@@ -58,7 +59,22 @@ public class Repository {
         } catch (UnsupportedEncodingException e) {
             throw new ModRunException("Error reading dependencies for module " + module.getFullName(), e);
         } catch (FileNotFoundException e) {
-            throw new ModRunException("Error reading dependencies for module " + module.getFullName(), e);
+            // Read the pom.xml file info from .jar
+            modulePomPath = "META-INF/maven/" + module.getGroupId()+"/"+module.getArtifactId()+"/pom.xml";
+            if (!module.getClassStorage().containsFile(modulePomPath)) {
+                throw new ModRunException("Error reading dependencies for module " + module.getFullName(), e);
+            }
+            byte[] pomBytes;
+            try {
+                pomBytes = module.getClassStorage().readFileBytes(modulePomPath);
+            } catch (IOException e2) {
+                throw new ModRunException("Error reading dependencies for module " + module.getFullName(), e2);
+            }
+            try(InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(pomBytes))) {
+                return new ModuleDependencyReader().readDependencies(reader);
+            } catch (IOException e2) {
+                throw new ModRunException("Error reading dependencies for module " + module.getFullName(), e2);
+            }
         } catch (IOException e) {
             throw new ModRunException("Error reading dependencies for module " + module.getFullName(), e);
         }

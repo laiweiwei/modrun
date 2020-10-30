@@ -7,6 +7,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Created by jjenkov on 25-10-2016.
+ * @author laiweiwei on 2020-10-30
  */
 public class ClassStorageZipFileImpl implements IClassStorage {
 
@@ -25,9 +26,13 @@ public class ClassStorageZipFileImpl implements IClassStorage {
 
     @Override
     public boolean containsClass(String className) {
-        String classPath = toClasspath(className);
+        String classFilePath = toClasspath(className);
+        return containsFile(classFilePath);
+    }
 
-        return this.zipFile.getEntry(classPath) != null;
+    @Override
+    public boolean containsFile(String filePath) {
+        return this.zipFile.getEntry(filePath) != null;
     }
 
     private String toClasspath(String className) {
@@ -36,13 +41,17 @@ public class ClassStorageZipFileImpl implements IClassStorage {
 
     @Override
     public byte[] readClassBytes(String className) throws IOException {
-        String classPath = toClasspath(className);
+        String classFilePath = toClasspath(className);
+        return readFileBytes(classFilePath);
+    }
 
-        ZipEntry zipEntry = this.zipFile.getEntry(classPath);
-        byte[] classBytes = new byte[(int) zipEntry.getSize()];
+    @Override
+    public byte[] readFileBytes(String filePath) throws IOException {
+        ZipEntry zipEntry = this.zipFile.getEntry(filePath);
+        byte[] fileBytes = new byte[(int) zipEntry.getSize()];
 
         InputStream inputStream = this.zipFile.getInputStream(zipEntry);
-        inputStream.read(classBytes);
-        return classBytes;
+        inputStream.read(fileBytes);
+        return fileBytes;
     }
 }

@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 
 /**
  * Created by jjenkov on 24-10-2016.
+ * @author laiweiwei on 2020-10-30
  */
 public class ClassStorageDirectoryImpl implements IClassStorage {
 
@@ -23,8 +24,15 @@ public class ClassStorageDirectoryImpl implements IClassStorage {
         return new File(this.classpath).exists();
     }
 
+    @Override
     public boolean containsClass(String className){
-        Path path = toFullPath(className);
+        String classPath = toFullPath(className);
+        return containsFile(classPath);
+    }
+
+    @Override
+    public boolean containsFile(String filePath){
+        Path path = Paths.get(filePath);
         File classFile = path.toFile();
         return classFile.exists();
     }
@@ -32,24 +40,30 @@ public class ClassStorageDirectoryImpl implements IClassStorage {
 
     @Override
     public byte[] readClassBytes(String className) throws IOException {
-        Path pathToClass = toFullPath(className);
-        File classFile = pathToClass.toFile();
+        String classPath = toFullPath(className);
+        return readFileBytes(classPath);
+    }
+
+    @Override
+    public byte[] readFileBytes(String filePath) throws IOException {
+        Path pathToFile = Paths.get(filePath);
+        File classFile = pathToFile.toFile();
 
         int fileLength = (int) classFile.length();
 
         byte[] classBytes = new byte[fileLength];
 
-        try(FileInputStream classInput = new FileInputStream(classFile)){
-            classInput.read(classBytes);
+        try(FileInputStream input = new FileInputStream(classFile)){
+            input.read(classBytes);
         }
 
         return classBytes;
     }
 
-    private Path toFullPath(String className) {
+    private String toFullPath(String className) {
         String pathToClass     = className.replace(".", "/");
         String fullPathToClass = this.classpath + pathToClass + ".class";
-
-        return Paths.get(fullPathToClass);
+        return fullPathToClass;
     }
+
 }
