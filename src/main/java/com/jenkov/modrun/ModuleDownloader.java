@@ -24,9 +24,7 @@ public class ModuleDownloader {
         }
     }
 
-
-
-    public void download(String groupId, String artifactId, String artifactVersion) throws IOException {
+    public File download(String groupId, String artifactId, String artifactVersion) throws IOException {
         File jarFileDirectory = new File(ModulePath.getModuleDirectoryPath(this.localRepositoryBaseFilePath, groupId, artifactId, artifactVersion));
         if(!jarFileDirectory.exists()){
             jarFileDirectory.mkdirs();
@@ -34,7 +32,6 @@ public class ModuleDownloader {
 
         File jarFile = new File(ModulePath.getModuleJarFilePath(this.localRepositoryBaseFilePath, groupId, artifactId, artifactVersion));
         URL  jarUrl  = new URL(ModulePath.getModuleJarUrl(this.remoteRepositoryBaseUrl, groupId, artifactId, artifactVersion));
-
 
         try(FileOutputStream jarFileOutput = new FileOutputStream(jarFile); InputStream urlInput = jarUrl.openConnection().getInputStream()) {
             int data = urlInput.read();
@@ -53,5 +50,6 @@ public class ModuleDownloader {
                 data = urlInput.read();
             }
         }
+        return pomFile;
     }
 }

@@ -9,12 +9,12 @@ public class Dependency {
     public String version;
     public String scope;
 
-    public boolean isRuntimeDependency() {
-        if("test".equals(this.scope)){
-            return false;
-        }
-        return true;
-    }
+//    public boolean isRuntimeDependency() {
+//        if("test".equals(this.scope)){
+//            return false;
+//        }
+//        return true;
+//    }
 
     public String toString() {
         return "(groupId: " + groupId + ", artifactId: " + artifactId + ", version: " + version + ", scope: " + scope + ")";

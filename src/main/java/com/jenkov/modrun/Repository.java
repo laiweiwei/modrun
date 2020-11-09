@@ -2,9 +2,11 @@ package com.jenkov.modrun;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Created by jjenkov on 23-10-2016.
@@ -12,7 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Repository {
 
-    private String rootDir = null;
+    public final static List<String> NOT_RUNTIME_SCOPE = Arrays.asList("test", "system", "provided");
+    private String rootDir;
 
     public Repository(String rootDir) {
         this.rootDir = rootDir;
@@ -31,7 +34,7 @@ public class Repository {
         return module;
     }
 
-    protected void buildDependencyGraph(Module module) throws IOException {
+    public void buildDependencyGraph(Module module) throws IOException {
         //System.out.println("Building dependency graph for module: " + module.getFullName());
 
         List<Dependency> dependencies = readDependenciesForModule(module);
@@ -39,19 +42,21 @@ public class Repository {
         List<Module> moduleDependencies = new ArrayList<Module>();
 
         for(Dependency dependency : dependencies) {
-            if(dependency.isRuntimeDependency()){
-                moduleDependencies.add(createModule(dependency.groupId, dependency.artifactId, dependency.version));
+            if(NOT_RUNTIME_SCOPE.contains(dependency.scope)){
+                continue;
             }
+            Module moduleDependency = createModule(dependency.groupId, dependency.artifactId, dependency.version);
+            moduleDependencies.add(moduleDependency);
         }
 
         module.setDependencies(moduleDependencies);
 
-        for(Module moduleDepdendency : moduleDependencies){
-            buildDependencyGraph(moduleDepdendency);
+        for(Module moduleDependency : moduleDependencies){
+            buildDependencyGraph(moduleDependency);
         }
     }
 
-    protected List<Dependency> readDependenciesForModule(Module module){
+    public List<Dependency> readDependenciesForModule(Module module){
         String modulePomPath = createModulePomPath(module);
 
         try(Reader reader = new InputStreamReader(new FileInputStream(modulePomPath), "UTF-8")){
@@ -86,9 +91,9 @@ public class Repository {
                             + "-" + module.getVersion() + ".pom";
     }
 
-    public void installModule(String remoteRepositoryBaseUrl, String groupId, String artifactId, String artifactVersion) throws IOException {
+    public File installModule(String remoteRepositoryBaseUrl, String groupId, String artifactId, String artifactVersion) throws IOException {
         ModuleDownloader moduleDownloader = new ModuleDownloader(remoteRepositoryBaseUrl, this.rootDir);
-        moduleDownloader.download(groupId, artifactId, artifactVersion);
+        return moduleDownloader.download(groupId, artifactId, artifactVersion);
     }
 
     public void installModuleAndDependencies(String remoteRepositoryBaseUrl, String groupId, String artifactId, String artifactVersion) throws IOException {
@@ -98,10 +103,27 @@ public class Repository {
         List<Dependency> dependencies = readDependenciesForModule(module);
 
         for(Dependency dependency : dependencies){
-            if(!"test".equals(dependency.scope)){
-                installModuleAndDependencies(remoteRepositoryBaseUrl, dependency.groupId, dependency.artifactId, dependency.version);
+            if(NOT_RUNTIME_SCOPE.contains(dependency.scope)){
+                continue;
             }
+            installModuleAndDependencies(remoteRepositoryBaseUrl, dependency.groupId, dependency.artifactId, dependency.version);
         }
     }
 
+    public void readDependencies(Module module, Function<Module, File> callback) {
+        List<Dependency> dependencies = readDependenciesForModule(module);
+        List<Module> moduleDependencies = new ArrayList<>();
+        for(Dependency dependency : dependencies) {
+            if(Repository.NOT_RUNTIME_SCOPE.contains(dependency.scope)){
+                continue;
+            }
+            Module moduleDependency = new Module(dependency.groupId, dependency.artifactId, dependency.version);
+            callback.apply(moduleDependency);
+            moduleDependencies.add(moduleDependency);
+        }
+        module.setDependencies(moduleDependencies);
+        for(Module moduleDependency : moduleDependencies){
+            readDependencies(moduleDependency, callback);
+        }
+    }
 }

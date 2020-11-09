@@ -5,7 +5,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;

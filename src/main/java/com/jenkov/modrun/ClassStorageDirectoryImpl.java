@@ -1,11 +1,15 @@
 package com.jenkov.modrun;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 
 /**
  * Created by jjenkov on 24-10-2016.
@@ -32,7 +36,7 @@ public class ClassStorageDirectoryImpl implements IClassStorage {
 
     @Override
     public boolean containsFile(String filePath){
-        Path path = Paths.get(filePath);
+        Path path = Paths.get(classpath, filePath);
         File classFile = path.toFile();
         return classFile.exists();
     }
@@ -46,7 +50,7 @@ public class ClassStorageDirectoryImpl implements IClassStorage {
 
     @Override
     public byte[] readFileBytes(String filePath) throws IOException {
-        Path pathToFile = Paths.get(filePath);
+        Path pathToFile = Paths.get(classpath, filePath);
         File classFile = pathToFile.toFile();
 
         int fileLength = (int) classFile.length();
@@ -58,6 +62,34 @@ public class ClassStorageDirectoryImpl implements IClassStorage {
         }
 
         return classBytes;
+    }
+
+    @Override
+    public URL toURL(String resource) throws MalformedURLException {
+        Path pathToFile = Paths.get(classpath, resource);
+        return new URL(pathToFile.toFile().getAbsolutePath());
+    }
+
+    @Override
+    public List<URL> listFiles(String dir) throws IOException {
+        Path pathToFile = Paths.get(classpath, dir);
+        File[] list = pathToFile.toFile().listFiles();
+        if (list == null) {
+            return null;
+        }
+        List<URL> urls = new ArrayList<>();
+        for (File f : list) {
+            urls.add(new URL(f.getAbsolutePath()));
+        }
+        return urls;
+    }
+
+    @Override
+    public List<URL> listClasses(String pkg) throws IOException {
+        List<URL> files = listFiles(pkg.replace(".", "/"));
+        return files.stream()
+                .filter(f -> f.getPath().endsWith(".class"))
+                .collect(Collectors.toList());
     }
 
     private String toFullPath(String className) {

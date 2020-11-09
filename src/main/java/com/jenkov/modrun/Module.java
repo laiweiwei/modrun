@@ -1,6 +1,11 @@
 package com.jenkov.modrun;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +28,6 @@ public class Module {
     private List<Module> dependencies;
 
     private Map<String, Class> loadedClasses = new ConcurrentHashMap<>();
-
 
     public Module(String groupId, String artifactId, String version) {
         this.groupId = groupId;
@@ -93,7 +97,61 @@ public class Module {
             }
         }
         return null;
+    }
 
+    public List<URL> getResources(String resource) throws IOException {
+        boolean ownerResource = getClassStorage().containsFile(resource);
+        if(ownerResource){
+            List<URL> files = getClassStorage().listFiles(resource);
+            return files;
+        }
+
+        //could be a core Java class - try the rootClassLoader.
+        if(this.getRootClassLoader() != null){
+            Enumeration<URL> urls = this.getRootClassLoader().getResources(resource);
+            if(urls != null){
+                List<URL> list = new ArrayList<>();
+                while (urls.hasMoreElements()) {
+                    list.add(urls.nextElement());
+                }
+                return list;
+            }
+        }
+        return null;
+    }
+
+    public URL getResource(String resource) throws IOException {
+        boolean ownerResource = getClassStorage().containsFile(resource);
+
+        if(ownerResource){
+            return getClassStorage().toURL(resource);
+        }
+
+        //could be a core Java class - try the rootClassLoader.
+        if(this.getRootClassLoader() != null){
+            URL url = this.getRootClassLoader().getResource(resource);
+            if(url != null){
+                return url;
+            }
+        }
+        return null;
+    }
+
+    public InputStream getResourceAsStream(String resource) throws IOException {
+        boolean ownerResource = getClassStorage().containsFile(resource);
+        if(ownerResource){
+            byte[] bytes = getClassStorage().readFileBytes(resource);
+            return new ByteArrayInputStream(bytes);
+        }
+
+        //could be a core Java class - try the rootClassLoader.
+        if(this.getRootClassLoader() != null){
+            InputStream stream = this.getRootClassLoader().getResourceAsStream(resource);
+            if(stream != null){
+                return stream;
+            }
+        }
+        return null;
     }
 
     public Class getClassFromThisModule(String className) throws IOException {
@@ -149,4 +207,5 @@ public class Module {
 
         return this.classStorage.containsClass(className);
     }
+
 }
