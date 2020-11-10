@@ -18,14 +18,26 @@ import java.util.zip.ZipEntry;
 public class ClassStorageDirectoryImpl implements IClassStorage {
 
     protected String classpath;
+    protected File rawFile;
 
     public ClassStorageDirectoryImpl(String classpath) {
         this.classpath = classpath;
+        this.rawFile = new File(this.classpath);
+    }
+
+    @Override
+    public void close() {
+        // ignore
+    }
+
+    @Override
+    public File getRawFile() {
+        return rawFile;
     }
 
     @Override
     public boolean exists() {
-        return new File(this.classpath).exists();
+        return rawFile.exists();
     }
 
     @Override

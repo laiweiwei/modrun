@@ -1,5 +1,6 @@
 package com.jenkov.modrun;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,6 +13,8 @@ import java.util.List;
 public interface IClassStorage {
 
     public boolean exists();
+
+    public File getRawFile();
 
     public boolean containsClass(String className);
 
@@ -26,5 +29,7 @@ public interface IClassStorage {
     public List<URL> listFiles(String dir) throws IOException;
 
     public List<URL> listClasses(String pkg) throws IOException;
+
+    public void close();
 
 }

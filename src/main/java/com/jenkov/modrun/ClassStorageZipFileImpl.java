@@ -18,14 +18,24 @@ import java.util.zip.ZipFile;
  */
 public class ClassStorageZipFileImpl implements IClassStorage {
 
-    private String  zipFilePath;
     private File rawFile;
     private ZipFile zipFile;
 
     public ClassStorageZipFileImpl(String zipFilePath) throws IOException {
-        this.zipFilePath = zipFilePath;
         this.rawFile = new File(zipFilePath);
         this.zipFile = new ZipFile(this.rawFile);
+    }
+
+    @Override
+    public void close() {
+        try {
+            this.zipFile.close();
+        } catch (Throwable e) {}
+    }
+
+    @Override
+    public File getRawFile() {
+        return rawFile;
     }
 
     @Override

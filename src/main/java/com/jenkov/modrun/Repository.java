@@ -21,6 +21,10 @@ public class Repository {
         this.rootDir = rootDir;
     }
 
+    public String getRootDir() {
+        return rootDir;
+    }
+
     public String createPathToModuleJar(Module module){
         return this.rootDir + "/" + module.getFullName() + "/" + module.getArtifactId() + "-" + module.getVersion() + ".jar";
     }
