@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
+ * @author laiweiwei 2020-11-11
  */
 public class Module {
 
@@ -161,7 +161,6 @@ public class Module {
             if(theClass != null){
                 return theClass;
             }
-
 
             if(containsClass(className)){
                 byte[] bytes = getClassStorage().readClassBytes(className);
