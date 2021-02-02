@@ -181,6 +181,9 @@ public class Module {
     }
 
     public Module findClassInDependencies(String className) {
+        if (this.dependencies == null || this.dependencies.isEmpty()) {
+            return null;
+        }
         for (int i = 0; i < this.dependencies.size(); i++) {
             Module dependency = this.dependencies.get(i);
             if (dependency.containsClass(className)) {

@@ -47,7 +47,6 @@ public class ModuleDependencyReader {
     public static Dependency parseDependency(XMLStreamReader streamReader) throws XMLStreamException {
         Dependency dependency = new Dependency();
 
-
         while(!(streamReader.getEventType() == XMLStreamReader.END_ELEMENT)){
             streamReader.next();
 
@@ -86,12 +85,10 @@ public class ModuleDependencyReader {
                 }
 
             }
-
         }
 
         return dependency;
     }
-
 
     public static void main(String[] args) throws FileNotFoundException {
         String repoRootDir = "D:\\data\\java\\products\\maven\\repository";
@@ -101,9 +98,5 @@ public class ModuleDependencyReader {
         FileReader reader = new FileReader(repoRootDir + filePath);
 
         List<Dependency> dependencies = ModuleDependencyReader.readDependencies(reader);
-
-
-
-
     }
 }
